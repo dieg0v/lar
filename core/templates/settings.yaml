@@ -1,0 +1,55 @@
+# Configuración general de LAR.
+# ./lar.sh init no sobrescribe este archivo si ya tiene contenido.
+#
+# default_bind y binds:
+#   local  publica el puerto solo en 127.0.0.1
+#   lan    publica el puerto en 0.0.0.0
+#
+# http es el puerto público. Lo publica el nginx de delante.
+# https queda reservado y todavía no se publica.
+# Apache y nginx no publican puertos. php es la máquina con todas las versiones.
+# El ini de cada versión está en core/php/<versión>/php.ini.
+# init lo copia a data/config/php/<versión>/php.ini y no lo sustituye si ya tiene contenido.
+
+timezone: Europe/Madrid
+default_bind: local
+
+ports:
+  http: 80
+  https: 443
+  mysql57: 3306
+  mysql8: 3307
+  mariadb1011: 3309
+  mariadb101: 33066
+  elasticsearch: 9200
+  elasticsearch_transport: 9300
+  minio: 9000
+  minio_console: 9001
+  redis: 6379
+  mailpit_smtp: 1025
+  mailpit_web: 8025
+
+services:
+  proxy: true
+  apache: true
+  nginx: true
+  php: true
+  mysql57: true
+  mysql8: true
+  mariadb1011: true
+  mariadb101: true
+  elasticsearch: true
+  minio: true
+  redis: true
+  mailpit: true
+
+binds:
+  http: local
+  mysql57: local
+  mysql8: local
+  mariadb1011: local
+  mariadb101: local
+  elasticsearch: local
+  minio: local
+  redis: local
+  mailpit: local

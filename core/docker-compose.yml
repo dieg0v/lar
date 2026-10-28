@@ -1,0 +1,180 @@
+name: lar
+
+services:
+  proxy:
+    build: ./nginx
+    image: lar-nginx
+    container_name: lar-proxy
+    environment:
+      TZ: ${LAR_TIMEZONE}
+    ports:
+      - "${LAR_BIND_HTTP_IP}:${LAR_PORT_HTTP}:80"
+    volumes:
+      - ../data/logs/proxy:/var/log/nginx
+      - ../data/config/proxy:/etc/nginx/lar-sites:ro
+    networks:
+      - lar
+
+  apache:
+    build: ./apache
+    image: lar-apache
+    container_name: lar-apache
+    environment:
+      TZ: ${LAR_TIMEZONE}
+    volumes:
+      - ../data/logs/apache:/var/log/apache2
+      - ../data/config/apache/apache.conf:/etc/apache2/conf-enabled/lar.conf:ro
+      - ../data/config/sites:/etc/apache2/lar-sites:ro
+    networks:
+      - lar
+
+  nginx:
+    build: ./nginx
+    image: lar-nginx
+    container_name: lar-nginx
+    environment:
+      TZ: ${LAR_TIMEZONE}
+    volumes:
+      - ../data/logs/nginx:/var/log/nginx
+      - ../data/config/nginx:/etc/nginx/lar-sites:ro
+    networks:
+      - lar
+
+  mysql57:
+    image: mysql:5.7
+    platform: linux/amd64
+    container_name: lar-mysql57
+    environment:
+      TZ: ${LAR_TIMEZONE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL57_ROOT_PASSWORD}
+    ports:
+      - "${LAR_BIND_MYSQL57_IP}:${LAR_PORT_MYSQL57}:3306"
+    volumes:
+      - ../data/mysql57:/var/lib/mysql
+      - ../data/config/mysql57/mysql.cnf:/etc/mysql/conf.d/zz-lar.cnf:ro
+    networks:
+      - lar
+
+  mysql8:
+    image: mysql:8.0
+    container_name: lar-mysql8
+    environment:
+      TZ: ${LAR_TIMEZONE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL8_ROOT_PASSWORD}
+    ports:
+      - "${LAR_BIND_MYSQL8_IP}:${LAR_PORT_MYSQL8}:3306"
+    volumes:
+      - ../data/mysql8:/var/lib/mysql
+      - ../data/config/mysql8/mysql.cnf:/etc/mysql/conf.d/zz-lar.cnf:ro
+    networks:
+      - lar
+
+  mariadb1011:
+    image: mariadb:10.11.11
+    container_name: lar-mariadb1011
+    environment:
+      TZ: ${LAR_TIMEZONE}
+      MARIADB_ROOT_PASSWORD: ${MARIADB1011_ROOT_PASSWORD}
+    ports:
+      - "${LAR_BIND_MARIADB1011_IP}:${LAR_PORT_MARIADB1011}:3306"
+    volumes:
+      - ../data/mariadb1011:/var/lib/mysql
+      - ../data/config/mariadb1011/mariadb.cnf:/etc/mysql/conf.d/zz-lar.cnf:ro
+    networks:
+      - lar
+
+  mariadb101:
+    image: mariadb:10.1.48
+    platform: linux/amd64
+    container_name: lar-mariadb101
+    environment:
+      TZ: ${LAR_TIMEZONE}
+      MYSQL_ROOT_PASSWORD: ${MARIADB101_ROOT_PASSWORD}
+    ports:
+      - "${LAR_BIND_MARIADB101_IP}:${LAR_PORT_MARIADB101}:3306"
+    volumes:
+      - ../data/mariadb101:/var/lib/mysql
+      - ../data/config/mariadb101/mariadb.cnf:/etc/mysql/conf.d/zz-lar.cnf:ro
+    networks:
+      - lar
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.4
+    container_name: lar-elasticsearch
+    environment:
+      TZ: ${LAR_TIMEZONE}
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      bootstrap.memory_lock: "false"
+    ports:
+      - "${LAR_BIND_ELASTICSEARCH_IP}:${LAR_PORT_ELASTICSEARCH}:9200"
+      - "${LAR_BIND_ELASTICSEARCH_IP}:${LAR_PORT_ELASTICSEARCH_TRANSPORT}:9300"
+    volumes:
+      - ../data/elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - lar
+
+  minio:
+    image: alpine/minio:RELEASE.2025-10-15T17-29-55Z
+    container_name: lar-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      TZ: ${LAR_TIMEZONE}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${LAR_BIND_MINIO_IP}:${LAR_PORT_MINIO}:9000"
+      - "${LAR_BIND_MINIO_IP}:${LAR_PORT_MINIO_CONSOLE}:9001"
+    volumes:
+      - ../data/minio:/data
+    networks:
+      - lar
+
+  redis:
+    image: redis:7
+    container_name: lar-redis
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    environment:
+      TZ: ${LAR_TIMEZONE}
+    ports:
+      - "${LAR_BIND_REDIS_IP}:${LAR_PORT_REDIS}:6379"
+    volumes:
+      - ../data/redis:/data
+      - ../data/config/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - lar
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: lar-mailpit
+    env_file:
+      - ../data/config/mailpit.env
+    environment:
+      TZ: ${LAR_TIMEZONE}
+    ports:
+      - "${LAR_BIND_MAILPIT_IP}:${LAR_PORT_MAILPIT_SMTP}:1025"
+      - "${LAR_BIND_MAILPIT_IP}:${LAR_PORT_MAILPIT_WEB}:8025"
+    volumes:
+      - ../data/mailpit:/data
+    networks:
+      - lar
+
+  php:
+    build: ./php
+    image: lar-php
+    container_name: lar-php
+    environment:
+      TZ: ${LAR_TIMEZONE}
+      MYSQL57_ROOT_PASSWORD: ${MYSQL57_ROOT_PASSWORD}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ../data/logs/php:/var/log/php
+      - ../data/config/php:/usr/local/lar/php-config:ro
+    networks:
+      - lar
+
+networks:
+  lar:
+    name: lar

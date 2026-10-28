@@ -1,0 +1,106 @@
+
+# ==================================================
+# LAR - Git ignore
+# ==================================================
+
+# --------------------------------------------------
+# DATOS PERSISTENTES Y CONFIGURACIÓN LOCAL
+# --------------------------------------------------
+
+# Versionar las carpetas de data y excluir su contenido.
+# Los .gitkeep conservan la estructura en Git.
+/data/**
+!/data/**/
+!/data/**/.gitkeep
+
+# --------------------------------------------------
+# VARIABLES DE ENTORNO Y SECRETOS
+# --------------------------------------------------
+
+# Ignorar variables de entorno con configuración local
+# o credenciales.
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Permitir plantillas de ejemplo sin secretos.
+!.env.example
+!**/.env.example
+
+# --------------------------------------------------
+# CERTIFICADOS Y CLAVES PRIVADAS
+# --------------------------------------------------
+
+# Ignorar certificados y claves privadas locales.
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.csr
+*.der
+
+# --------------------------------------------------
+# LOGS
+# --------------------------------------------------
+
+# Ignorar registros generados por servicios y scripts.
+*.log
+/logs/
+
+# --------------------------------------------------
+# COPIAS DE SEGURIDAD Y VOLCADOS
+# --------------------------------------------------
+
+# Ignorar copias de seguridad y volcados de bases de datos.
+*.sql
+*.sql.gz
+*.dump
+*.dump.gz
+*.bak
+*.backup
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
+# --------------------------------------------------
+# ARCHIVOS TEMPORALES
+# --------------------------------------------------
+
+# Ignorar archivos temporales y de recuperación.
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Archivos del sistema operativo.
+.DS_Store
+Thumbs.db
+
+# --------------------------------------------------
+# EDITORES E IDE
+# --------------------------------------------------
+
+# Configuración personal de editores.
+.idea/
+.vscode/
+*.code-workspace
+
+# --------------------------------------------------
+# DOCKER COMPOSE LOCAL
+# --------------------------------------------------
+
+# Ignorar configuraciones locales que sobrescriben
+# la configuración compartida de Docker Compose.
+docker-compose.override.yml
+docker-compose.local.yml
+
+# --------------------------------------------------
+# Carpetas comunes
+# --------------------------------------------------
+.cursor/
+sites/

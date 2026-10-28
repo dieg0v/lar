@@ -1,0 +1,12 @@
+# MySQL 5.7. init lo copia a data/config/mysql57/mysql.cnf y no lo sustituye si ya tiene contenido.
+[mysqld]
+character-set-server = utf8mb4
+collation-server = utf8mb4_general_ci
+max_allowed_packet = 64M
+innodb_buffer_pool_size = 256M
+innodb_file_per_table = 1
+explicit_defaults_for_timestamp = 1
+sql_mode = NO_ENGINE_SUBSTITUTION
+
+[client]
+default-character-set = utf8mb4

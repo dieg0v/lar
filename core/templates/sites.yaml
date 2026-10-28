@@ -1,0 +1,21 @@
+# Sitios de LAR.
+# ./lar.sh init no sobrescribe este archivo si ya tiene contenido.
+# path es la carpeta del proyecto, una ruta absoluta del sistema.
+# ./lar.sh shell nombre entra en esa carpeta. El nombre es el del sitio.
+# public_path es lo que sirve Apache o nginx. Si no se pone, se sirve path.
+# Puede ser absoluta o relativa a path, por ejemplo public.
+# php y node son opcionales. Sin php el sitio es HTML estático:
+# no se crea pool y se ignoran las directivas del ini.
+# Si la shell no tiene php o node, usa la versión más alta instalada.
+# server es apache o nginx. Si no se pone, es apache.
+# node es la versión de Node de la shell, por ejemplo "20" o "14.15.0".
+# La máquina trae 14.15.0, 19.1.0, 20.0.0 y 22.21.1. La más alta es la de por defecto.
+# alias es opcional. Son otros dominios del mismo sitio:
+# alias:
+#   - ejemplo.test
+#   - api.ejemplo.test
+# Las demás claves, si el sitio tiene php y existen en el ini, se aplican solo a ese sitio.
+# xdebug: true lo enciende solo en ese sitio. El IDE escucha en el puerto 9003.
+# ./lar.sh up genera la config del proxy, de Apache o nginx, y el pool de PHP.
+
+sites:

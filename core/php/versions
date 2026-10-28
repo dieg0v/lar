@@ -1,0 +1,14 @@
+# version  puerto del pool www
+# Los pools de un sitio con directivas propias usan 9101 en adelante.
+5.6 9056
+7.0 9070
+7.1 9071
+7.2 9072
+7.3 9073
+7.4 9074
+8.0 9080
+8.1 9081
+8.2 9082
+8.3 9083
+8.4 9084
+8.5 9085
