@@ -9,9 +9,11 @@ services:
       TZ: ${LAR_TIMEZONE}
     ports:
       - "${LAR_BIND_HTTP_IP}:${LAR_PORT_HTTP}:80"
+      - "${LAR_BIND_HTTPS_IP}:${LAR_PORT_HTTPS}:443"
     volumes:
       - ../data/logs/proxy:/var/log/nginx
       - ../data/config/proxy:/etc/nginx/lar-sites:ro
+      - ../data/certs:/etc/nginx/lar-certs:ro
     networks:
       - lar
 

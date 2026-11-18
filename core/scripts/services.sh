@@ -82,6 +82,7 @@ lar_prepare_runtime() {
   lar_require_docker
 
   LAR_BIND_HTTP_IP=$(lar_bind_ip "$LAR_BIND_HTTP")
+  LAR_BIND_HTTPS_IP=$(lar_bind_ip "$LAR_BIND_HTTPS")
   LAR_BIND_MYSQL57_IP=$(lar_bind_ip "$LAR_BIND_MYSQL57")
   LAR_BIND_MYSQL8_IP=$(lar_bind_ip "$LAR_BIND_MYSQL8")
   LAR_BIND_MARIADB1011_IP=$(lar_bind_ip "$LAR_BIND_MARIADB1011")
@@ -92,6 +93,7 @@ lar_prepare_runtime() {
   LAR_BIND_MAILPIT_IP=$(lar_bind_ip "$LAR_BIND_MAILPIT")
   export LAR_TIMEZONE
   export LAR_BIND_HTTP_IP LAR_PORT_HTTP
+  export LAR_BIND_HTTPS_IP LAR_PORT_HTTPS
   export LAR_BIND_MYSQL57_IP LAR_PORT_MYSQL57
   export LAR_BIND_MYSQL8_IP LAR_PORT_MYSQL8
   export LAR_BIND_MARIADB1011_IP LAR_PORT_MARIADB1011

@@ -49,6 +49,7 @@ lar_config_defaults() {
   LAR_SERVICE_MAILPIT=true
 
   LAR_BIND_HTTP=''
+  LAR_BIND_HTTPS=''
   LAR_BIND_MYSQL57=''
   LAR_BIND_MYSQL8=''
   LAR_BIND_MARIADB1011=''
@@ -200,6 +201,7 @@ lar_config_assign() {
       lar_config_parse_bind "$value" "$file" "$line"
       case "$key" in
         http) LAR_BIND_HTTP=$LAR_PARSED_VALUE ;;
+        https) LAR_BIND_HTTPS=$LAR_PARSED_VALUE ;;
         mysql57) LAR_BIND_MYSQL57=$LAR_PARSED_VALUE ;;
         mysql8) LAR_BIND_MYSQL8=$LAR_PARSED_VALUE ;;
         mariadb1011) LAR_BIND_MARIADB1011=$LAR_PARSED_VALUE ;;
@@ -221,6 +223,7 @@ lar_config_assign() {
 
 lar_config_apply_binds() {
   [ -n "$LAR_BIND_HTTP" ] || LAR_BIND_HTTP=$LAR_DEFAULT_BIND
+  [ -n "$LAR_BIND_HTTPS" ] || LAR_BIND_HTTPS=$LAR_BIND_HTTP
   [ -n "$LAR_BIND_MYSQL57" ] || LAR_BIND_MYSQL57=$LAR_DEFAULT_BIND
   [ -n "$LAR_BIND_MYSQL8" ] || LAR_BIND_MYSQL8=$LAR_DEFAULT_BIND
   [ -n "$LAR_BIND_MARIADB1011" ] || LAR_BIND_MARIADB1011=$LAR_DEFAULT_BIND

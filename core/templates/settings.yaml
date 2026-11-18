@@ -5,8 +5,8 @@
 #   local  publica el puerto solo en 127.0.0.1
 #   lan    publica el puerto en 0.0.0.0
 #
-# http es el puerto público. Lo publica el nginx de delante.
-# https queda reservado y todavía no se publica.
+# http y https los publica el nginx de delante.
+# https solo responde en los sitios con https: true. El certificado es autofirmado.
 # Apache y nginx no publican puertos. php es la máquina con todas las versiones.
 # El ini de cada versión está en core/php/<versión>/php.ini.
 # init lo copia a data/config/php/<versión>/php.ini y no lo sustituye si ya tiene contenido.
@@ -45,6 +45,7 @@ services:
 
 binds:
   http: local
+  https: local
   mysql57: local
   mysql8: local
   mariadb1011: local

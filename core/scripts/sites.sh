@@ -383,6 +383,7 @@ ${alias_line}    DocumentRoot "${conf_path}"
             SetHandler "proxy:fcgi://php:${conf_port}"
         </FilesMatch>
     </Directory>
+    SetEnvIf X-Forwarded-Proto "^https$" HTTPS=on
     ErrorLog /var/log/apache2/${conf_name}-error.log
     CustomLog /var/log/apache2/${conf_name}-access.log combined
 </VirtualHost>
@@ -401,6 +402,7 @@ ${alias_line}    DocumentRoot "${conf_path}"
         Require all granted
         DirectoryIndex index.html
     </Directory>
+    SetEnvIf X-Forwarded-Proto "^https$" HTTPS=on
     ErrorLog /var/log/apache2/${conf_name}-error.log
     CustomLog /var/log/apache2/${conf_name}-access.log combined
 </VirtualHost>
@@ -437,6 +439,7 @@ server {
         try_files \$uri =404;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param HTTPS \$lar_https if_not_empty;
         set \$lar_php php:${conf_port};
         fastcgi_pass \$lar_php;
     }
@@ -461,14 +464,96 @@ server {
 EOF
 }
 
+lar_sites_cert_ensure() {
+  cert_name=$1
+  cert_names=$2
+  if ! command -v openssl >/dev/null 2>&1; then
+    lar_fail "Hace falta openssl en el Mac para crear los certificados."
+  fi
+  cert_dir=$LAR_ROOT/data/certs/$cert_name
+  mkdir -p "$cert_dir"
+  cert_stamp=$(printf '%s' "$cert_names" | tr ' ' '\n' | sort | tr '\n' ' ' | sed 's/ *$//')
+  if [ -s "$cert_dir/cert.pem" ] && [ -s "$cert_dir/key.pem" ] && [ -f "$cert_dir/names" ]; then
+    cert_current=$(sed -n '1p' "$cert_dir/names")
+    if [ "$cert_current" = "$cert_stamp" ]; then
+      return 0
+    fi
+  fi
+  cert_cn=$(printf '%s' "$cert_names" | awk '{ print $1 }')
+  cert_san=''
+  for cert_host in $cert_names; do
+    cert_san="${cert_san}DNS:${cert_host},"
+  done
+  cert_san=${cert_san%,}
+  cert_conf=$(mktemp)
+  cat > "$cert_conf" <<EOF
+[req]
+distinguished_name = dn
+x509_extensions = ext
+prompt = no
+[dn]
+CN = ${cert_cn}
+[ext]
+subjectAltName = ${cert_san}
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+EOF
+  openssl req -x509 -nodes -newkey rsa:2048 -days 825 \
+    -keyout "$cert_dir/key.pem" -out "$cert_dir/cert.pem" \
+    -config "$cert_conf" >/dev/null 2>&1 \
+    || lar_fail "No se ha podido crear el certificado de $cert_name."
+  rm -f "$cert_conf"
+  printf '%s\n' "$cert_stamp" > "$cert_dir/names"
+  chmod 644 "$cert_dir/cert.pem" "$cert_dir/key.pem"
+}
+
+lar_sites_write_https_map() {
+  cat > "$LAR_ROOT/data/config/nginx/00-https.conf" <<'EOF'
+# Generado por ./lar.sh. Se vuelve a crear desde sites.yaml.
+map $http_x_forwarded_proto $lar_https {
+    default "";
+    https   on;
+}
+EOF
+}
+
+lar_sites_write_proxy_tls_default() {
+  lar_sites_cert_ensure _default localhost
+  cat > "$LAR_ROOT/data/config/proxy/00-default.conf" <<'EOF'
+# Generado por ./lar.sh. Se vuelve a crear desde sites.yaml.
+server {
+    listen 80 default_server;
+    server_name _;
+    return 404;
+}
+
+server {
+    listen 443 ssl default_server;
+    server_name _;
+    ssl_certificate /etc/nginx/lar-certs/_default/cert.pem;
+    ssl_certificate_key /etc/nginx/lar-certs/_default/key.pem;
+    return 404;
+}
+EOF
+}
+
 lar_sites_write_proxy() {
   conf_name=$1
   conf_domain=$2
   conf_server=$3
   conf_alias=$4
+  conf_https=$5
   names=$conf_domain
   if [ -n "$conf_alias" ]; then
     names="$conf_domain $conf_alias"
+  fi
+  ssl_lines=''
+  if [ "$conf_https" = "true" ]; then
+    ssl_lines="    listen 443 ssl;
+    ssl_certificate /etc/nginx/lar-certs/${conf_name}/cert.pem;
+    ssl_certificate_key /etc/nginx/lar-certs/${conf_name}/key.pem;
+"
   fi
   lar_site_body "$conf_name"
   conf_dest=$LAR_ROOT/data/config/proxy/$conf_name.conf
@@ -476,7 +561,7 @@ lar_sites_write_proxy() {
 # Generado por ./lar.sh. Se vuelve a crear desde sites.yaml.
 server {
     listen 80;
-    server_name ${names};
+${ssl_lines}    server_name ${names};
     access_log /var/log/nginx/${conf_name}-access.log;
     error_log /var/log/nginx/${conf_name}-error.log warn;
     client_max_body_size ${LAR_SITE_BODY};
@@ -568,7 +653,10 @@ lar_sites_flush() {
   if [ -z "$site_alias" ]; then
     site_alias='-'
   fi
-  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$site" "$site_domain" "$site_path" "$site_public" "$site_php" "$site_server" "$site_node" "$site_enabled" "$site_alias" >> "$LAR_SITE_MANIFEST"
+  if [ -z "$site_https" ]; then
+    site_https=false
+  fi
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$site" "$site_domain" "$site_path" "$site_public" "$site_php" "$site_server" "$site_node" "$site_enabled" "$site_alias" "$site_https" >> "$LAR_SITE_MANIFEST"
   site=''
   site_domain=''
   site_path=''
@@ -579,6 +667,7 @@ lar_sites_flush() {
   site_alias=''
   site_list=''
   site_enabled=true
+  site_https=false
 }
 
 lar_sites_parse() {
@@ -593,6 +682,7 @@ lar_sites_parse() {
   site_alias=''
   site_list=''
   site_enabled=true
+  site_https=false
   line_no=0
 
   while IFS= read -r line || [ -n "$line" ]; do
@@ -691,11 +781,12 @@ lar_sites_parse() {
       site_node=''
       site_alias=''
       site_list=''
+      site_https=false
       continue
     fi
 
     if [ "$indent" -ne 4 ] || [ -z "$site" ]; then
-      lar_config_fail "$file" "$line_no" "domain, path, public_path, php, server, node, alias y las directivas del ini van al mismo nivel"
+      lar_config_fail "$file" "$line_no" "domain, path, public_path, php, server, node, alias, https y las directivas del ini van al mismo nivel"
     fi
     if [ "$key" != "alias" ]; then
       if [ "$site_list" = "alias" ] && [ -z "${site_alias# }" ]; then
@@ -757,6 +848,12 @@ lar_sites_parse() {
           *) lar_config_fail "$file" "$line_no" "enabled debe ser true o false" ;;
         esac
         ;;
+      https)
+        case "$value" in
+          true|false) site_https=$value ;;
+          *) lar_config_fail "$file" "$line_no" "https debe ser true o false" ;;
+        esac
+        ;;
       xdebug)
         case "$value" in
           true|false) ;;
@@ -786,7 +883,9 @@ lar_sites_prepare() {
   lar_sites_clear_pools
   mkdir -p "$LAR_ROOT/data/config/nginx" "$LAR_ROOT/data/config/proxy"
   lar_sites_write_edge_default "$LAR_ROOT/data/config/nginx"
+  lar_sites_write_https_map
   lar_sites_write_edge_default "$LAR_ROOT/data/config/proxy"
+  LAR_HTTPS_SITES=0
   if [ ! -s "$LAR_SITE_MANIFEST" ]; then
     rm -f "$LAR_SITE_MANIFEST"
     printf '%s\n' "  sitios: ninguno"
@@ -795,7 +894,7 @@ lar_sites_prepare() {
 
   LAR_PORT_POOL=9100
 
-  while IFS='	' read -r name domain path public php server node enabled aliases; do
+  while IFS='	' read -r name domain path public php server node enabled aliases https; do
     if [ "$public" = "-" ]; then
       public=''
     fi
@@ -807,6 +906,9 @@ lar_sites_prepare() {
     fi
     if [ "$aliases" = "-" ]; then
       aliases=''
+    fi
+    if [ "$https" != "true" ]; then
+      https=false
     fi
     port=''
     if [ -n "$php" ]; then
@@ -856,7 +958,15 @@ lar_sites_prepare() {
         lar_sites_write_nginx "$name" "$domain" "$LAR_SITE_PUBLIC" "$port" "$aliases"
         ;;
     esac
-    lar_sites_write_proxy "$name" "$domain" "$server" "$aliases"
+    if [ "$https" = "true" ]; then
+      cert_names=$domain
+      if [ -n "$aliases" ]; then
+        cert_names="$domain $aliases"
+      fi
+      lar_sites_cert_ensure "$name" "$cert_names"
+      LAR_HTTPS_SITES=1
+    fi
+    lar_sites_write_proxy "$name" "$domain" "$server" "$aliases" "$https"
     site_note=''
     if [ -n "$php" ]; then
       site_note="$site_note, PHP $php"
@@ -867,12 +977,18 @@ lar_sites_prepare() {
     if [ -n "$aliases" ]; then
       site_note="$site_note, alias $aliases"
     fi
+    if [ "$https" = "true" ]; then
+      site_note="$site_note, https"
+    fi
     if [ "$LAR_SITE_PUBLIC" != "$path" ]; then
       site_note="$site_note, public $LAR_SITE_PUBLIC"
     fi
     printf '%s\n' "  sitio $domain → $path ($server$site_note)"
   done < "$LAR_SITE_MANIFEST"
   rm -f "$LAR_SITE_MANIFEST"
+  if [ "$LAR_HTTPS_SITES" = 1 ]; then
+    lar_sites_write_proxy_tls_default
+  fi
 }
 
 lar_sites_hosts_render() {
@@ -1042,7 +1158,7 @@ lar_site_by_name() {
   lar_sites_parse
   found=0
   if [ -s "$LAR_SITE_MANIFEST" ]; then
-    while IFS='	' read -r name domain path public php server node enabled aliases; do
+    while IFS='	' read -r name domain path public php server node enabled aliases https; do
       if [ "$name" != "$wanted" ]; then
         continue
       fi
@@ -1187,7 +1303,7 @@ lar_list() {
   list_rows=$(mktemp)
   lar_sites_parse
   if [ -s "$LAR_SITE_MANIFEST" ]; then
-    while IFS=$(printf '\t') read -r list_name list_domain list_project list_public list_php list_server list_node list_enabled list_aliases; do
+    while IFS=$(printf '\t') read -r list_name list_domain list_project list_public list_php list_server list_node list_enabled list_aliases list_https; do
       lar_list_label "$list_name" "$list_domain" "$list_server" "$list_php" "$list_node" "$list_enabled" | while IFS= read -r list_label; do
         printf '%s\t%s\t%s\n' "$list_name" "$list_enabled" "$list_label"
       done >> "$list_rows"
