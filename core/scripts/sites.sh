@@ -122,6 +122,26 @@ lar_sites_check_overrides() {
   done < "$LAR_SITE_OVERRIDES"
 }
 
+lar_sites_xdebug_mode() {
+  case "$1" in
+    true|debug)
+      LAR_XDEBUG_MODE=debug
+      ;;
+    false)
+      LAR_XDEBUG_MODE=off
+      ;;
+    coverage)
+      LAR_XDEBUG_MODE=coverage
+      ;;
+    debug,coverage|coverage,debug)
+      LAR_XDEBUG_MODE=debug,coverage
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 lar_sites_xdebug_lines() {
   xdebug_name=$1
   xdebug_php=$2
@@ -129,27 +149,47 @@ lar_sites_xdebug_lines() {
   if [ -z "$xdebug_value" ]; then
     return 0
   fi
+  if ! lar_sites_xdebug_mode "$xdebug_value"; then
+    lar_fail "xdebug de $xdebug_name no es válido: $xdebug_value"
+  fi
   case "$xdebug_php" in
     5.6|7.0|7.1)
-      if [ "$xdebug_value" = "true" ]; then
-        printf '%s\n' "php_admin_value[xdebug.remote_enable] = 1"
-        printf '%s\n' "php_admin_value[xdebug.remote_autostart] = 1"
-        printf '%s\n' "php_admin_value[xdebug.remote_host] = host.docker.internal"
-        printf '%s\n' "php_admin_value[xdebug.remote_port] = 9003"
-      else
-        printf '%s\n' "php_admin_value[xdebug.remote_enable] = 0"
-        printf '%s\n' "php_admin_value[xdebug.remote_autostart] = 0"
-      fi
+      case "$LAR_XDEBUG_MODE" in
+        debug|debug,coverage)
+          printf '%s\n' "php_admin_value[xdebug.remote_enable] = 1"
+          printf '%s\n' "php_admin_value[xdebug.remote_autostart] = 1"
+          printf '%s\n' "php_admin_value[xdebug.remote_host] = host.docker.internal"
+          printf '%s\n' "php_admin_value[xdebug.remote_port] = 9003"
+          ;;
+        *)
+          printf '%s\n' "php_admin_value[xdebug.remote_enable] = 0"
+          printf '%s\n' "php_admin_value[xdebug.remote_autostart] = 0"
+          ;;
+      esac
+      case "$LAR_XDEBUG_MODE" in
+        coverage|debug,coverage)
+          printf '%s\n' "php_admin_value[xdebug.coverage_enable] = 1"
+          ;;
+      esac
       ;;
     *)
-      if [ "$xdebug_value" = "true" ]; then
-        printf '%s\n' "php_admin_value[xdebug.mode] = debug"
-        printf '%s\n' "php_admin_value[xdebug.start_with_request] = yes"
-        printf '%s\n' "php_admin_value[xdebug.client_host] = host.docker.internal"
-        printf '%s\n' "php_admin_value[xdebug.client_port] = 9003"
-      else
-        printf '%s\n' "php_admin_value[xdebug.mode] = off"
+      # Xdebug lee el modo al arrancar el worker. php_admin_value llega tarde; la variable de entorno no.
+      # FPM trata "off" como vacío, así que ese caso no lleva env.
+      if [ "$LAR_XDEBUG_MODE" != "off" ]; then
+        printf '%s\n' "env[XDEBUG_MODE] = $LAR_XDEBUG_MODE"
       fi
+      printf '%s\n' "php_admin_value[xdebug.mode] = $LAR_XDEBUG_MODE"
+      case "$LAR_XDEBUG_MODE" in
+        debug|debug,coverage)
+          printf '%s\n' "php_admin_value[xdebug.start_with_request] = yes"
+          printf '%s\n' "php_admin_value[xdebug.client_host] = host.docker.internal"
+          printf '%s\n' "php_admin_value[xdebug.client_port] = 9003"
+          ;;
+        coverage)
+          # El ini global pone start_with_request=no. default arranca la cobertura y no el debugger.
+          printf '%s\n' "php_admin_value[xdebug.start_with_request] = default"
+          ;;
+      esac
       ;;
   esac
 }
@@ -855,10 +895,9 @@ lar_sites_parse() {
         esac
         ;;
       xdebug)
-        case "$value" in
-          true|false) ;;
-          *) lar_config_fail "$file" "$line_no" "xdebug debe ser true o false" ;;
-        esac
+        if ! lar_sites_xdebug_mode "$value"; then
+          lar_config_fail "$file" "$line_no" "xdebug debe ser false, true, coverage o debug,coverage"
+        fi
         lar_sites_add_override "$site" "xdebug" "$value"
         ;;
       *)

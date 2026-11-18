@@ -15,7 +15,8 @@
 #   - ejemplo.test
 #   - api.ejemplo.test
 # Las demás claves, si el sitio tiene php y existen en el ini, se aplican solo a ese sitio.
-# xdebug: true lo enciende solo en ese sitio. El IDE escucha en el puerto 9003.
+# xdebug es solo de ese sitio. false lo apaga. true es debug y el IDE escucha en el 9003.
+# coverage mide la cobertura de Codeception. debug,coverage hace las dos cosas.
 # https: true crea un certificado autofirmado del dominio y sus alias y lo publica en el 443.
 # ./lar.sh up genera la config del proxy, de Apache o nginx, y el pool de PHP.
 
