@@ -128,15 +128,26 @@ lar_prepare_runtime() {
   lar_write_runtime "$redis_password"
 }
 
+lar_runtime_php_hosts() {
+  host_name=$1
+  case "$host_name" in
+    ''|*[!A-Za-z0-9.-]*)
+      lar_fail "Dominio no válido para extra_hosts: $host_name"
+      ;;
+  esac
+  printf '      - "%s:host-gateway"\n' "$host_name"
+}
+
 lar_write_runtime() {
   password=$1
   mounts=$LAR_ROOT/data/.site-mounts
   dest=$LAR_ROOT/data/.runtime.yml
   has_mounts=0
+  site_hosts=$(printf '%s' "${LAR_SITE_DOMAINS-}" | sed 's/^ *//; s/ *$//')
   if [ -s "$mounts" ]; then
     has_mounts=1
   fi
-  if [ -z "$password" ] && [ "$has_mounts" -eq 0 ]; then
+  if [ -z "$password" ] && [ "$has_mounts" -eq 0 ] && [ -z "$site_hosts" ]; then
     rm -f "$dest"
     LAR_COMPOSE_OVERRIDE=''
     return 0
@@ -145,6 +156,7 @@ lar_write_runtime() {
   umask 077
   {
     printf '%s\n' "services:"
+    php_written=0
     if [ "$has_mounts" -eq 1 ]; then
       services=$(cut -f 1 "$mounts" | sort -u)
       for service in $services; do
@@ -155,6 +167,22 @@ lar_write_runtime() {
           target_escaped=$(printf '%s' "$target" | sed 's/\\/\\\\/g; s/"/\\"/g')
           printf '      - "%s:%s"\n' "$host_escaped" "$target_escaped"
         done
+        if [ "$service" = "php" ] && [ -n "$site_hosts" ]; then
+          printf '%s\n' "    extra_hosts:"
+          lar_runtime_php_hosts host.docker.internal
+          for site_host in $site_hosts; do
+            lar_runtime_php_hosts "$site_host"
+          done
+          php_written=1
+        fi
+      done
+    fi
+    if [ "$php_written" -eq 0 ] && [ -n "$site_hosts" ]; then
+      printf '%s\n' "  php:"
+      printf '%s\n' "    extra_hosts:"
+      lar_runtime_php_hosts host.docker.internal
+      for site_host in $site_hosts; do
+        lar_runtime_php_hosts "$site_host"
       done
     fi
     if [ -n "$password" ]; then
