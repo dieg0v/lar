@@ -123,6 +123,13 @@ COPY reload.sh /usr/local/bin/lar-php-reload
 RUN chown web:web /home/web/.zshrc /home/web/.oh-my-zsh/custom/themes/lar.zsh-theme /home/web/.oh-my-zsh/custom/plugins/artisan/artisan.plugin.zsh \
     && chmod 755 /usr/local/bin/lar-php /usr/local/bin/lar-php-reload
 
+# Composer queda en la imagen. El phar llama a "php" del PATH, el de esta terminal.
+RUN set -eu \
+    && curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php \
+    && php8.4 /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && rm -f /tmp/composer-setup.php \
+    && php8.4 /usr/local/bin/composer --version
+
 # upgrade.stamp cambia cuando lar update acepta parches. Esta capa se repite y el resto queda en caché.
 COPY upgrade.list /tmp/lar-upgrade.list
 COPY upgrade.stamp /tmp/lar-upgrade.stamp
