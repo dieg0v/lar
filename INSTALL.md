@@ -1,28 +1,28 @@
 # INSTALL
 
-1. Instala Docker Desktop y ábrelo.
-2. Ciérralo desde el icono de la ballena → Quit. En la terminal:
+1. Install Docker Desktop and open it.
+2. Quit it from the whale icon → Quit. In the terminal:
 
 ```
 sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
 ```
 
-Instala el ayudante que deja a Docker abrir el puerto 80. Ábrelo otra vez.
+This installs the helper that lets Docker open port 80. Open Docker again.
 
-3. En `~/.zshrc`, o en `~/.zprofile`, o si usas bash en `~/.bash_profile`. La carpeta donde está `lar`:
+3. In `~/.zshrc`, or in `~/.zprofile`, or in `~/.bash_profile` if you use bash. The folder that contains `lar`:
 
 ```
-export PATH="/ruta/de/lar:$PATH"
+export PATH="/path/to/lar:$PATH"
 ```
 
-Hace que `lar` se encuentre desde cualquier carpeta. Abre una terminal nueva.
+That makes `lar` available from any folder. Open a new terminal.
 
-4. Docker Desktop → Settings → Resources → File sharing. Tienen que estar la carpeta `data/` de este proyecto y cada `path` y `public_path` de `data/config/sites.yaml`. Con Docker cerrado, `lar install` puede añadirlas. Si está abierto, ciérralo, ejecuta `lar install` y ábrelo.
+4. Docker Desktop → Settings → Resources → File sharing. The project's `data/` folder and every `path` and `public_path` in `data/config/sites.yaml` must be listed. With Docker closed, `lar install` can add them. If it is open, quit it, run `lar install`, and open it again.
 
-`lar install` comprueba Docker, `vmnetd` y esas carpetas compartidas.
+`lar install` checks Docker, `vmnetd`, and those shared folders.
 
-5. `lar init` crea `settings.yaml`, `sites.yaml` y `data/.env` si no existen. Si ya tienen contenido, `lar install` no los pisa salvo que respondas sí al PELIGRO.
+5. `lar init` creates `settings.yaml`, `sites.yaml`, and `data/.env` when they do not exist. If they already have content, `lar install` leaves them unless you answer yes to DANGER.
 
-6. `lar up` arranca el entorno y escribe los dominios en `/etc/hosts`. macOS pide la contraseña si el bloque cambia. `lar down` para el entorno y quita ese bloque.
+6. `lar up` starts the environment and writes the domains into `/etc/hosts`. macOS asks for the password when the block changes. `lar down` stops the environment and removes that block.
 
-7. `lar -s site1` abre la shell de ese sitio desde cualquier carpeta.
+7. `lar -s site1` opens that site's shell from any folder.

@@ -1,4 +1,4 @@
-# MariaDB 10.11.11. init lo copia a data/config/mariadb1011/mariadb.cnf y no lo sustituye si ya tiene contenido.
+# MariaDB 10.11.11. init copies it to data/config/mariadb1011/mariadb.cnf and does not replace it when it already has content.
 [mysqld]
 character-set-server = utf8mb4
 collation-server = utf8mb4_general_ci

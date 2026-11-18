@@ -1,2 +1,2 @@
-# Paquetes que lar update sube en la imagen. Una línea, un paquete.
-# LibreOffice, Node y gulp no entran aquí.
+# Packages lar update upgrades in the image. One package per line.
+# LibreOffice, Node, and gulp are not included here.

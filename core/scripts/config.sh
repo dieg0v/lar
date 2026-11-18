@@ -1,9 +1,9 @@
 #!/bin/sh
-# Carga un subconjunto de settings.yaml: escalares y secciones de un nivel.
-# Este archivo se incluye desde lar.sh.
+# Loads a subset of settings.yaml: scalars and one-level sections.
+# This file is included from lar.sh.
 
 if [ "${0##*/}" = "config.sh" ]; then
-  printf '%s\n' "Este archivo se carga desde ./lar.sh" >&2
+  printf '%s\n' "This file is loaded from ./lar.sh" >&2
   exit 1
 fi
 
@@ -79,14 +79,14 @@ lar_config_parse_port() {
   line=$3
   case "$value" in
     ''|*[!0-9]*)
-      lar_config_fail "$file" "$line" "el puerto debe ser un número entre 1 y 65535"
+      lar_config_fail "$file" "$line" "the port must be a number between 1 and 65535"
       ;;
     0*)
-      lar_config_fail "$file" "$line" "el puerto no puede ser 0 ni tener ceros a la izquierda"
+      lar_config_fail "$file" "$line" "the port cannot be 0 or have leading zeros"
       ;;
   esac
   if [ "$value" -lt 1 ] || [ "$value" -gt 65535 ]; then
-    lar_config_fail "$file" "$line" "el puerto debe estar entre 1 y 65535"
+    lar_config_fail "$file" "$line" "the port must be between 1 and 65535"
   fi
   LAR_PARSED_VALUE=$value
 }
@@ -100,7 +100,7 @@ lar_config_parse_bool() {
       LAR_PARSED_VALUE=$value
       ;;
     *)
-      lar_config_fail "$file" "$line" "el valor debe ser true o false"
+      lar_config_fail "$file" "$line" "the value must be true or false"
       ;;
   esac
 }
@@ -114,7 +114,7 @@ lar_config_parse_bind() {
       LAR_PARSED_VALUE=$value
       ;;
     *)
-      lar_config_fail "$file" "$line" "el bind debe ser local o lan"
+      lar_config_fail "$file" "$line" "the bind must be local or lan"
       ;;
   esac
 }
@@ -152,7 +152,7 @@ lar_config_assign() {
           LAR_DEFAULT_BIND=$LAR_PARSED_VALUE
           ;;
         *)
-          lar_config_fail "$file" "$line" "clave desconocida: $key"
+          lar_config_fail "$file" "$line" "unknown key: $key"
           ;;
       esac
       ;;
@@ -173,7 +173,7 @@ lar_config_assign() {
         mailpit_smtp) LAR_PORT_MAILPIT_SMTP=$LAR_PARSED_VALUE ;;
         mailpit_web) LAR_PORT_MAILPIT_WEB=$LAR_PARSED_VALUE ;;
         *)
-          lar_config_fail "$file" "$line" "puerto desconocido: $key"
+          lar_config_fail "$file" "$line" "unknown port: $key"
           ;;
       esac
       ;;
@@ -193,7 +193,7 @@ lar_config_assign() {
         redis) LAR_SERVICE_REDIS=$LAR_PARSED_VALUE ;;
         mailpit) LAR_SERVICE_MAILPIT=$LAR_PARSED_VALUE ;;
         *)
-          lar_config_fail "$file" "$line" "servicio desconocido: $key"
+          lar_config_fail "$file" "$line" "unknown service: $key"
           ;;
       esac
       ;;
@@ -211,12 +211,12 @@ lar_config_assign() {
         redis) LAR_BIND_REDIS=$LAR_PARSED_VALUE ;;
         mailpit) LAR_BIND_MAILPIT=$LAR_PARSED_VALUE ;;
         *)
-          lar_config_fail "$file" "$line" "bind desconocido: $key"
+          lar_config_fail "$file" "$line" "unknown bind: $key"
           ;;
       esac
       ;;
     *)
-      lar_config_fail "$file" "$line" "sección desconocida: $section"
+      lar_config_fail "$file" "$line" "unknown section: $section"
       ;;
   esac
 }
@@ -238,7 +238,7 @@ lar_config_validate() {
   file=$1
   case "$LAR_TIMEZONE" in
     ''|*[!A-Za-z0-9/_+-]*|*..*|/*|*/)
-      lar_config_fail "$file" "-" "timezone no válida: $LAR_TIMEZONE"
+      lar_config_fail "$file" "-" "invalid timezone: $LAR_TIMEZONE"
       ;;
   esac
 
@@ -260,7 +260,7 @@ lar_config_validate() {
   do
     case "$seen_ports" in
       *"|$port|"*)
-        lar_config_fail "$file" "-" "el puerto $port está repetido"
+        lar_config_fail "$file" "-" "port $port is repeated"
         ;;
     esac
     seen_ports="${seen_ports}${port}|"
@@ -270,7 +270,7 @@ lar_config_validate() {
 lar_config_load() {
   file=$1
   if [ ! -f "$file" ]; then
-    lar_fail "No existe el archivo de configuración: $file"
+    lar_fail "Configuration file does not exist: $file"
   fi
 
   lar_config_defaults
@@ -282,7 +282,7 @@ lar_config_load() {
     line=$(printf '%s' "$line" | tr -d '\r')
     case "$line" in
       *'	'*)
-        lar_config_fail "$file" "$line_no" "usa espacios en lugar de tabuladores"
+        lar_config_fail "$file" "$line_no" "use spaces instead of tabs"
         ;;
     esac
 
@@ -309,13 +309,13 @@ lar_config_load() {
         value=$(printf '%s' "$trimmed" | sed 's/^[^:]*:[[:space:]]*//; s/[[:space:]]*$//')
         ;;
       *)
-        lar_config_fail "$file" "$line_no" "línea no reconocida"
+        lar_config_fail "$file" "$line_no" "unrecognized line"
         ;;
     esac
 
     case "$key" in
       ''|*[!a-z0-9_]*)
-        lar_config_fail "$file" "$line_no" "clave no válida: $key"
+        lar_config_fail "$file" "$line_no" "invalid key: $key"
         ;;
     esac
 
@@ -324,14 +324,14 @@ lar_config_load() {
 
     if [ -z "$value" ]; then
       if [ "$nested" -eq 1 ]; then
-        lar_config_fail "$file" "$line_no" "la sección debe estar en la primera columna"
+        lar_config_fail "$file" "$line_no" "the section must be in the first column"
       fi
       case "$key" in
         ports|services|binds)
           section=$key
           ;;
         *)
-          lar_config_fail "$file" "$line_no" "falta el valor de $key"
+          lar_config_fail "$file" "$line_no" "missing value for $key"
           ;;
       esac
       continue
@@ -342,13 +342,13 @@ lar_config_load() {
       target=root
     else
       if [ -z "$section" ]; then
-        lar_config_fail "$file" "$line_no" "la clave está dentro de una sección inexistente"
+        lar_config_fail "$file" "$line_no" "the key is inside a section that does not exist"
       fi
       target=$section
     fi
 
     if ! lar_config_seen_add "$target.$key"; then
-      lar_config_fail "$file" "$line_no" "clave duplicada: $key"
+      lar_config_fail "$file" "$line_no" "duplicate key: $key"
     fi
 
     lar_config_assign "$target" "$key" "$value" "$file" "$line_no"

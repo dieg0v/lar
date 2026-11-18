@@ -1,4 +1,4 @@
-# MySQL 8.0. init lo copia a data/config/mysql8/mysql.cnf y no lo sustituye si ya tiene contenido.
+# MySQL 8.0. init copies it to data/config/mysql8/mysql.cnf and does not replace it when it already has content.
 [mysqld]
 character-set-server = utf8mb4
 collation-server = utf8mb4_general_ci

@@ -1,5 +1,5 @@
-# artisan en LAR corre con el php de esta shell. No pasa por Sail ni por
-# docker compose: esta terminal ya está dentro del contenedor.
+# artisan in LAR runs with this shell's php. It does not go through Sail or
+# docker compose: this terminal is already inside the container.
 
 _artisan_find() {
   local dir=.
@@ -16,7 +16,7 @@ _artisan_find() {
 artisan() {
   local artisan_path
   artisan_path=$(_artisan_find) || {
-    print -u2 "artisan: no está en este proyecto."
+    print -u2 "artisan: it is not in this project."
     return 1
   }
   php "$artisan_path" "$@"

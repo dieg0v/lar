@@ -41,39 +41,39 @@ LAR_ROOT=$ROOT
 
 usage() {
   cat <<'EOF'
-Uso: ./lar.sh <comando>
+Usage: ./lar.sh <command>
 
-Comandos:
-  install              Arranca Docker y prepara la configuración. Pregunta antes de sustituir los archivos personales
-  init                 Crea los directorios de datos, la configuración inicial y valida settings.yaml
-  up [servicio]        Arranca los servicios habilitados, o solo el indicado
-  down [servicio]      Detiene el entorno o un servicio, sin borrar datos
-  restart [servicio]   Reinicia los servicios habilitados, o solo el indicado
-  status               Muestra los contenedores
-  logs [servicio]      Muestra las últimas líneas de log
-  shell [sitio]        Abre zsh en la carpeta de ese sitio, con el usuario web
-  -s [sitio]           Igual que shell
-  list                 Muestra los sitios. Flechas para moverse, enter abre el elegido
-  update               Busca parches de PHP, Chrome y las herramientas, y pregunta antes de subirlos
-  help                 Muestra esta ayuda
+Commands:
+  install              Starts Docker and prepares the configuration. Asks before replacing personal files
+  init                 Creates the data directories, the initial configuration, and validates settings.yaml
+  up [service]         Starts the enabled services, or only the one given
+  down [service]       Stops the environment or one service, without deleting data
+  restart [service]    Restarts the enabled services, or only the one given
+  status               Shows the containers
+  logs [service]       Shows the latest log lines
+  shell [site]         Opens zsh in that site's folder, as the web user
+  -s [site]            Same as shell
+  list                 Shows the sites. Arrows to move, enter opens the chosen one
+  update               Looks for PHP, Chrome, and tool patches, and asks before applying them
+  help                 Shows this help
 
-Servicios: proxy, apache, nginx, php, mysql57, mysql8, mariadb1011, mariadb101, elasticsearch, minio, redis, mailpit
+Services: proxy, apache, nginx, php, mysql57, mysql8, mariadb1011, mariadb101, elasticsearch, minio, redis, mailpit
 
-./lar.sh up arranca el nginx del puerto 80, Apache, nginx, la máquina PHP, MySQL 5.7, MySQL 8, MariaDB 10.11, MariaDB 10.1, Elasticsearch, MinIO, Redis y Mailpit.
-./lar.sh shell site1 abre zsh en el path de site1. lar -s site1 es lo mismo. lar list elige el sitio con las flechas y enter. Si el sitio tiene php, deja esa versión. Si tiene node, hace nvm use. Sin nombre abre el home de web. sudo su pasa a root.
-En el Mac, up escribe los dominios en /etc/hosts y down quita ese bloque. Si cambia, macOS pide la contraseña.
-init no sustituye settings.yaml, sites.yaml ni data/.env si ya tienen contenido.
-install pregunta antes de sustituirlos. Si respondes que no, los conserva.
-En macOS, install comprueba vmnetd. Sin ese ayudante no se puede abrir el puerto 80.
-update pregunta por PHP, por Chrome y por el resto de herramientas. LibreOffice, Node y gulp se quedan en su versión fijada.
+./lar.sh up starts the nginx on port 80, Apache, nginx, the PHP machine, MySQL 5.7, MySQL 8, MariaDB 10.11, MariaDB 10.1, Elasticsearch, MinIO, Redis, and Mailpit.
+./lar.sh shell site1 opens zsh at site1's path. lar -s site1 is the same. lar list picks the site with the arrows and enter. If the site has php, that version is set. If it has node, it runs nvm use. With no name it opens web's home. sudo su switches to root.
+On the Mac, up writes the domains into /etc/hosts and down removes that block. If it changes, macOS asks for the password.
+init does not replace settings.yaml, sites.yaml, or data/.env when they already have content.
+install asks before replacing them. If you answer no, it keeps them.
+On macOS, install checks vmnetd. Without that helper, port 80 cannot be opened.
+update asks about PHP, about Chrome, and about the other tools. LibreOffice, Node, and gulp stay on their pinned version.
 
-Previstos y todavía no implementados:
+Planned and not implemented yet:
   backup, restore
 EOF
 }
 
 not_implemented() {
-  printf '%s\n' "El comando '$1' todavía no está implementado." >&2
+  printf '%s\n' "Command '$1' is not implemented yet." >&2
   exit 1
 }
 
@@ -93,7 +93,7 @@ case "$cmd" in
     ;;
   install)
     if [ "$#" -ne 0 ]; then
-      printf '%s\n' "install no admite argumentos." >&2
+      printf '%s\n' "install does not accept arguments." >&2
       usage >&2
       exit 2
     fi
@@ -101,7 +101,7 @@ case "$cmd" in
     ;;
   init)
     if [ "$#" -ne 0 ]; then
-      printf '%s\n' "init no admite argumentos." >&2
+      printf '%s\n' "init does not accept arguments." >&2
       usage >&2
       exit 2
     fi
@@ -135,7 +135,7 @@ case "$cmd" in
     not_implemented "$cmd"
     ;;
   *)
-    printf '%s\n' "Comando desconocido: $cmd" >&2
+    printf '%s\n' "Unknown command: $cmd" >&2
     usage >&2
     exit 2
     ;;

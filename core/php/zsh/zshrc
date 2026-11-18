@@ -4,7 +4,7 @@ export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="lar"
 DISABLE_AUTO_UPDATE=true
 DISABLE_UPDATE_PROMPT=true
-# zsh-syntax-highlighting tiene que ir el último.
+# zsh-syntax-highlighting has to be last.
 plugins=(
   git
   artisan
@@ -13,18 +13,18 @@ plugins=(
 )
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=110'
 
-# nvm antes de oh-my-zsh para que los plugins del final conserven el editor de línea.
+# nvm before oh-my-zsh so the plugins at the end keep the line editor.
 export NVM_DIR="$HOME/.nvm"
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then
   source "$NVM_DIR/nvm.sh"
   if [[ -n "${LAR_NODE_VERSION:-}" ]]; then
-    nvm use --silent "$LAR_NODE_VERSION" || print -u2 "No está Node ${LAR_NODE_VERSION}. Ejecuta nvm ls"
+    nvm use --silent "$LAR_NODE_VERSION" || print -u2 "Node ${LAR_NODE_VERSION} is not installed. Run nvm ls"
   fi
 fi
 
 source "$ZSH/oh-my-zsh.sh"
 
-# Cada shell tiene su propio php. Otra terminal no lo cambia.
+# Each shell has its own php. Another terminal does not change it.
 LAR_PHP_BIN_DIR="/tmp/lar-php-$$"
 mkdir -p "$LAR_PHP_BIN_DIR"
 chmod 700 "$LAR_PHP_BIN_DIR"
@@ -34,8 +34,8 @@ rm -f "$HOME/bin/php"
 lar_php_use() {
   local version="$1"
   if [[ -z "$version" || ! -x "/usr/bin/php${version}" ]]; then
-    print -u2 "No está PHP ${version}."
-    print -u2 -n "Versiones:"
+    print -u2 "PHP ${version} is not installed."
+    print -u2 -n "Versions:"
     local bin
     for bin in /usr/bin/php<->.*; do
       [[ -x "$bin" ]] || continue
@@ -51,8 +51,8 @@ lar_php_use() {
 
 phpuse() {
   if [[ -z "$1" ]]; then
-    print "Uso: phpuse 8.5"
-    print "php5 deja 5.6, php7 deja 7.4 y php8 deja 8.5. Solo en esta terminal."
+    print "Usage: phpuse 8.5"
+    print "php5 sets 5.6, php7 sets 7.4, and php8 sets 8.5. Only in this terminal."
     return 1
   fi
   lar_php_use "$1"
@@ -88,7 +88,7 @@ if [[ -n "${LAR_SHELL_CHECK:-}" ]]; then
   node -v && npm -v && php -v
 fi
 
-# Los sitios están montados desde el Mac: git los ve de otro usuario.
+# Sites are mounted from the Mac: git sees them as another user.
 if ! command git config --global --get-all safe.directory 2>/dev/null | grep -qx '\*'; then
   command git config --global --add safe.directory '*'
 fi

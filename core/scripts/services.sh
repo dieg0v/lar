@@ -1,8 +1,8 @@
 #!/bin/sh
-# Arranque, parada, estado y logs. Se incluye desde lar.sh.
+# Start, stop, status, and logs. Included from lar.sh.
 
 if [ "${0##*/}" = "services.sh" ]; then
-  printf '%s\n' "Este archivo se carga desde ./lar.sh" >&2
+  printf '%s\n' "This file is loaded from ./lar.sh" >&2
   exit 1
 fi
 
@@ -15,7 +15,7 @@ lar_bind_ip() {
       printf '%s\n' "0.0.0.0"
       ;;
     *)
-      lar_fail "Bind no válido: $1"
+      lar_fail "Invalid bind: $1"
       ;;
   esac
 }
@@ -38,7 +38,7 @@ lar_known_service() {
       return 0
       ;;
     php56|php70|php74|php80|php81|php82|php85)
-      printf '%s\n' "Las versiones de PHP van dentro del servicio php. Usa ./lar.sh up php." >&2
+      printf '%s\n' "PHP versions live inside the php service. Use ./lar.sh up php." >&2
       exit 2
       ;;
     *)
@@ -48,8 +48,8 @@ lar_known_service() {
 }
 
 lar_unknown_service() {
-  printf '%s\n' "Servicio desconocido: $1" >&2
-  printf '%s\n' "Servicios: proxy, apache, nginx, php, mysql57, mysql8, mariadb1011, mariadb101, elasticsearch, minio, redis, mailpit" >&2
+  printf '%s\n' "Unknown service: $1" >&2
+  printf '%s\n' "Services: proxy, apache, nginx, php, mysql57, mysql8, mariadb1011, mariadb101, elasticsearch, minio, redis, mailpit" >&2
   exit 2
 }
 
@@ -73,10 +73,10 @@ lar_service_enabled() {
 
 lar_prepare_runtime() {
   if [ ! -f "$LAR_ROOT/data/config/settings.yaml" ]; then
-    lar_fail "Falta data/config/settings.yaml. Ejecuta ./lar.sh init."
+    lar_fail "Missing data/config/settings.yaml. Run ./lar.sh init."
   fi
   if [ ! -s "$LAR_ROOT/data/.env" ]; then
-    lar_fail "Falta data/.env. Ejecuta ./lar.sh init."
+    lar_fail "Missing data/.env. Run ./lar.sh init."
   fi
   lar_config_load "$LAR_ROOT/data/config/settings.yaml"
   lar_require_docker
@@ -107,11 +107,11 @@ lar_prepare_runtime() {
   redis_password=$(lar_env_value "$LAR_ROOT/data/.env" REDIS_PASSWORD)
   case "$redis_password" in
     *[!A-Za-z0-9]*)
-      lar_fail "REDIS_PASSWORD en data/.env solo puede contener letras y números."
+      lar_fail "REDIS_PASSWORD in data/.env may only contain letters and numbers."
       ;;
   esac
   if [ "$LAR_BIND_REDIS" = "lan" ] && [ -z "$redis_password" ]; then
-    lar_fail "Redis con bind lan necesita REDIS_PASSWORD en data/.env."
+    lar_fail "Redis with bind lan needs REDIS_PASSWORD in data/.env."
   fi
   lar_env_ensure MYSQL8_ROOT_PASSWORD toor
   lar_env_ensure MARIADB1011_ROOT_PASSWORD toor
@@ -122,7 +122,7 @@ lar_prepare_runtime() {
     minio_user=$(lar_env_value "$LAR_ROOT/data/.env" MINIO_ROOT_USER)
     minio_password=$(lar_env_value "$LAR_ROOT/data/.env" MINIO_ROOT_PASSWORD)
     if [ -z "$minio_user" ] || [ "${#minio_password}" -lt 8 ]; then
-      lar_fail "MinIO necesita MINIO_ROOT_USER y una MINIO_ROOT_PASSWORD de 8 caracteres o más en data/.env."
+      lar_fail "MinIO needs MINIO_ROOT_USER and a MINIO_ROOT_PASSWORD of 8 characters or more in data/.env."
     fi
   fi
   lar_ensure_service_configs "$LAR_ROOT"
@@ -134,7 +134,7 @@ lar_runtime_php_hosts() {
   host_name=$1
   case "$host_name" in
     ''|*[!A-Za-z0-9.-]*)
-      lar_fail "Dominio no válido para extra_hosts: $host_name"
+      lar_fail "Invalid domain for extra_hosts: $host_name"
       ;;
   esac
   printf '      - "%s:host-gateway"\n' "$host_name"
@@ -255,7 +255,7 @@ lar_default_services() {
   fi
   LAR_SERVICE_LIST=$(printf '%s' "$LAR_SERVICE_LIST" | sed 's/^ *//')
   if [ -z "$LAR_SERVICE_LIST" ]; then
-    lar_fail "No hay servicios habilitados en settings.yaml."
+    lar_fail "No services are enabled in settings.yaml."
   fi
 }
 
@@ -263,7 +263,7 @@ lar_warn_bind() {
   service=$1
   bind=$2
   if [ "$bind" = "lan" ]; then
-    printf '%s\n' "Aviso: $service se publica en todas las interfaces." >&2
+    printf '%s\n' "Warning: $service is published on every interface." >&2
   fi
 }
 
@@ -273,7 +273,7 @@ lar_check_one_service() {
     lar_unknown_service "$service"
   fi
   if ! lar_service_enabled "$service"; then
-    printf '%s\n' "Aviso: $service está desactivado en settings.yaml. Se gestiona solo esta vez." >&2
+    printf '%s\n' "Warning: $service is disabled in settings.yaml. It is managed only this once." >&2
   fi
   case "$service" in
     proxy) lar_warn_bind proxy "$LAR_BIND_HTTP" ;;
@@ -350,12 +350,12 @@ lar_truncate_logs() {
       : > "$log_file"
     done
   done
-  printf '%s\n' "Logs vaciados."
+  printf '%s\n' "Logs cleared."
 }
 
 lar_up() {
   if [ "$#" -gt 1 ]; then
-    printf '%s\n' "up admite como máximo un servicio." >&2
+    printf '%s\n' "up accepts at most one service." >&2
     exit 2
   fi
   if [ "$#" -eq 1 ] && ! lar_known_service "$1"; then
@@ -368,7 +368,7 @@ lar_up() {
     if lar_command_needs_sites "$1"; then
       lar_require_shared
     fi
-    printf '%s\n' "Arrancando $1"
+    printf '%s\n' "Starting $1"
     lar_compose up -d --build --remove-orphans "$1"
     case "$1" in
       proxy|apache|nginx|php)
@@ -395,8 +395,8 @@ lar_up() {
       mailpit) lar_warn_bind mailpit "$LAR_BIND_MAILPIT" ;;
     esac
   done
-  printf '%s\n' "Arrancando: $LAR_SERVICE_LIST"
-  # Los nombres salen de una lista fija de servicios.
+  printf '%s\n' "Starting: $LAR_SERVICE_LIST"
+  # The names come from a fixed list of services.
   # shellcheck disable=SC2086
   lar_compose up -d --build --remove-orphans $LAR_SERVICE_LIST
   lar_reload_front
@@ -405,7 +405,7 @@ lar_up() {
 
 lar_down() {
   if [ "$#" -gt 1 ]; then
-    printf '%s\n' "down admite como máximo un servicio." >&2
+    printf '%s\n' "down accepts at most one service." >&2
     exit 2
   fi
   lar_prepare_runtime
@@ -418,12 +418,12 @@ lar_down() {
   if [ "$#" -eq 0 ]; then
     lar_sites_hosts_clear
   fi
-  printf '%s\n' "Los datos de data/ se conservan."
+  printf '%s\n' "Data in data/ is kept."
 }
 
 lar_restart() {
   if [ "$#" -gt 1 ]; then
-    printf '%s\n' "restart admite como máximo un servicio." >&2
+    printf '%s\n' "restart accepts at most one service." >&2
     exit 2
   fi
   lar_prepare_runtime
@@ -441,7 +441,7 @@ lar_restart() {
 
 lar_status() {
   if [ "$#" -ne 0 ]; then
-    printf '%s\n' "status no admite argumentos." >&2
+    printf '%s\n' "status does not accept arguments." >&2
     exit 2
   fi
   lar_prepare_runtime
@@ -450,7 +450,7 @@ lar_status() {
 
 lar_logs() {
   if [ "$#" -gt 1 ]; then
-    printf '%s\n' "logs admite como máximo un servicio." >&2
+    printf '%s\n' "logs accepts at most one service." >&2
     exit 2
   fi
   lar_prepare_runtime

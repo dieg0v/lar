@@ -1,15 +1,15 @@
-# Configuración general de LAR.
-# ./lar.sh init no sobrescribe este archivo si ya tiene contenido.
+# General LAR configuration.
+# ./lar.sh init does not overwrite this file when it already has content.
 #
-# default_bind y binds:
-#   local  publica el puerto solo en 127.0.0.1
-#   lan    publica el puerto en 0.0.0.0
+# default_bind and binds:
+#   local  publishes the port only on 127.0.0.1
+#   lan    publishes the port on 0.0.0.0
 #
-# http y https los publica el nginx de delante.
-# https solo responde en los sitios con https: true. El certificado es autofirmado.
-# Apache y nginx no publican puertos. php es la máquina con todas las versiones.
-# El ini de cada versión está en core/php/<versión>/php.ini.
-# init lo copia a data/config/php/<versión>/php.ini y no lo sustituye si ya tiene contenido.
+# The front nginx publishes http and https.
+# https answers only for sites with https: true. The certificate is self-signed.
+# Apache and nginx do not publish ports. php is the machine with every version.
+# Each version's ini is in core/php/<version>/php.ini.
+# init copies it to data/config/php/<version>/php.ini and does not replace it when it already has content.
 
 timezone: Europe/Madrid
 default_bind: local

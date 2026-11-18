@@ -1,8 +1,8 @@
 #!/bin/sh
-# Arranque de Docker y uso compartido de data/. Se incluye desde lar.sh.
+# Starts Docker and shares data/. Included from lar.sh.
 
 if [ "${0##*/}" = "install.sh" ]; then
-  printf '%s\n' "Este archivo se carga desde ./lar.sh" >&2
+  printf '%s\n' "This file is loaded from ./lar.sh" >&2
   exit 1
 fi
 
@@ -11,7 +11,7 @@ lar_ask_yes() {
   if [ ! -r /dev/tty ]; then
     return 1
   fi
-  printf '%s [s/N] ' "$prompt" >/dev/tty
+  printf '%s [y/N] ' "$prompt" >/dev/tty
   read -r answer </dev/tty || return 1
   case "$answer" in
     s|S|si|SI|sí|Sí|y|Y|yes|YES)
@@ -42,7 +42,7 @@ lar_docker_ready() {
 
 lar_wait_docker() {
   tries=0
-  printf '%s' "  Esperando a Docker"
+  printf '%s' "  Waiting for Docker"
   while [ "$tries" -lt 40 ]; do
     if lar_docker_ready; then
       printf '\n'
@@ -57,28 +57,28 @@ lar_wait_docker() {
 
 lar_start_docker() {
   if ! command -v docker >/dev/null 2>&1; then
-    lar_fail "No se encuentra docker. Instala Docker Engine o Docker Desktop."
+    lar_fail "docker was not found. Install Docker Engine or Docker Desktop."
   fi
   if ! docker compose version >/dev/null 2>&1; then
-    lar_fail "No se encuentra Docker Compose v2. Hace falta el comando: docker compose"
+    lar_fail "Docker Compose v2 was not found. The command is required: docker compose"
   fi
   if docker info >/dev/null 2>&1; then
-    printf '%s\n' "  Docker ya está en marcha"
+    printf '%s\n' "  Docker is already running"
     return 0
   fi
   case "$(uname -s)" in
     Darwin)
-      printf '%s\n' "  Abriendo Docker Desktop"
+      printf '%s\n' "  Opening Docker Desktop"
       open -a Docker
       ;;
     *)
-      lar_fail "Docker no está en marcha. Arranca el servicio y vuelve a ejecutar ./lar.sh install."
+      lar_fail "Docker is not running. Start the service and run ./lar.sh install again."
       ;;
   esac
   if ! lar_wait_docker; then
-    lar_fail "Docker no respondió. Ábrelo a mano y vuelve a ejecutar ./lar.sh install."
+    lar_fail "Docker did not respond. Open it by hand and run ./lar.sh install again."
   fi
-  printf '%s\n' "  Docker y Compose v2: disponibles"
+  printf '%s\n' "  Docker and Compose v2: available"
 }
 
 lar_docker_settings() {
@@ -165,7 +165,7 @@ lar_require_shared() {
   path=$(lar_share_realpath data)
   status=$(lar_share_data_status "$settings" "$path" </dev/null)
   if [ "$status" != "already" ]; then
-    printf '%s\n' "Docker todavía no puede usar esta carpeta:" >&2
+    printf '%s\n' "Docker still cannot use this folder:" >&2
     printf '%s\n' "  $path" >&2
     missing=1
   fi
@@ -183,14 +183,14 @@ lar_require_shared() {
       seen_paths="${seen_paths}${path}|"
       status=$(lar_share_data_status "$settings" "$path" </dev/null)
       if [ "$status" != "already" ]; then
-        printf '%s\n' "Docker todavía no puede usar esta carpeta:" >&2
+        printf '%s\n' "Docker still cannot use this folder:" >&2
         printf '%s\n' "  $path" >&2
         missing=1
       fi
     done < "$LAR_ROOT/data/.site-mounts"
   fi
   if [ "$missing" -eq 1 ]; then
-    printf '%s\n' "Ciérralo desde el icono de la ballena, ejecuta ./lar.sh install y, cuando añada la ruta, ábrelo y vuelve a ejecutar ./lar.sh up." >&2
+    printf '%s\n' "Quit it from the whale icon, run ./lar.sh install and, when it adds the path, open it and run ./lar.sh up again." >&2
     exit 1
   fi
 }
@@ -200,7 +200,7 @@ lar_share_data() {
     Darwin)
       ;;
     *)
-      printf '%s\n' "  En este sistema Docker monta las carpetas directamente"
+      printf '%s\n' "  On this system Docker mounts the folders directly"
       return 0
       ;;
   esac
@@ -209,8 +209,8 @@ lar_share_data() {
   targets=$(mktemp)
   lar_share_targets | awk '!seen[$0]++' > "$targets"
   if [ ! -f "$settings" ]; then
-    printf '%s\n' "  No encuentro la configuración de Docker Desktop."
-    printf '%s\n' "  Añade estas rutas en Docker Desktop → Resources → File sharing:"
+    printf '%s\n' "  Docker Desktop configuration was not found."
+    printf '%s\n' "  Add these paths in Docker Desktop → Resources → File sharing:"
     while IFS= read -r path; do
       printf '%s\n' "  $path"
     done < "$targets"
@@ -218,8 +218,8 @@ lar_share_data() {
     return 0
   fi
   if ! command -v python3 >/dev/null 2>&1; then
-    printf '%s\n' "  Hace falta python3 para editar la configuración de Docker Desktop."
-    printf '%s\n' "  Añade estas rutas a mano:"
+    printf '%s\n' "  python3 is required to edit the Docker Desktop configuration."
+    printf '%s\n' "  Add these paths by hand:"
     while IFS= read -r path; do
       printf '%s\n' "  $path"
     done < "$targets"
@@ -234,7 +234,7 @@ lar_share_data() {
     fi
     status=$(lar_share_data_status "$settings" "$path" </dev/null)
     if [ "$status" = "already" ]; then
-      printf '%s\n' "  Docker ya puede usar $path"
+      printf '%s\n' "  Docker can already use $path"
       continue
     fi
     printf '%s\n' "$path" >> "$missing"
@@ -246,31 +246,31 @@ lar_share_data() {
   fi
 
   if [ ! -r /dev/tty ]; then
-    printf '%s\n' "  Sin terminal interactiva no se cambia la configuración de Docker Desktop."
-    printf '%s\n' "  Sin esas rutas, ./lar.sh up no puede usar los sitios ni guardar datos."
+    printf '%s\n' "  Without an interactive terminal the Docker Desktop configuration is not changed."
+    printf '%s\n' "  Without those paths, ./lar.sh up cannot use the sites or store data."
     rm -f "$missing"
     return 0
   fi
 
-  printf '%s\n' "Docker todavía no puede usar estas carpetas:"
+  printf '%s\n' "Docker still cannot use these folders:"
   while IFS= read -r path; do
     printf '%s\n' "  $path"
   done < "$missing"
-  printf '%s\n' "Hay que añadirlas a Docker Desktop. Antes se guarda una copia en data/backups/docker-settings.json."
-  if ! lar_ask_yes "¿Añadir esas carpetas?"; then
-    printf '%s\n' "  No se modifica la configuración de Docker Desktop."
-    printf '%s\n' "  Sin esas rutas, ./lar.sh up no puede usar los sitios ni guardar datos."
+  printf '%s\n' "They have to be added to Docker Desktop. A copy is saved first in data/backups/docker-settings.json."
+  if ! lar_ask_yes "Add those folders?"; then
+    printf '%s\n' "  The Docker Desktop configuration is not changed."
+    printf '%s\n' "  Without those paths, ./lar.sh up cannot use the sites or store data."
     rm -f "$missing"
     return 0
   fi
 
   if lar_docker_ready; then
-    printf '%s\n' "  Docker Desktop está abierto. La ruta se guarda solo con la aplicación cerrada."
-    printf '%s\n' "  Ciérralo desde el icono de la ballena → Quit."
-    printf '%s' "  Cuando esté cerrado, pulsa Intro para añadir la ruta: " >/dev/tty
+    printf '%s\n' "  Docker Desktop is open. The path is saved only while the application is closed."
+    printf '%s\n' "  Quit it from the whale icon → Quit."
+    printf '%s' "  When it is closed, press Enter to add the path: " >/dev/tty
     read -r _ </dev/tty || true
     if lar_docker_ready; then
-      printf '%s\n' "  Docker Desktop sigue abierto. Ciérralo y ejecuta otra vez ./lar.sh install." >&2
+      printf '%s\n' "  Docker Desktop is still open. Quit it and run ./lar.sh install again." >&2
       rm -f "$missing"
       exit 1
     fi
@@ -281,13 +281,13 @@ lar_share_data() {
   while IFS= read -r path; do
     if ! lar_share_data_add "$settings" "$path"; then
       rm -f "$missing"
-      lar_fail "No se pudo guardar la ruta en la configuración de Docker Desktop."
+      lar_fail "Could not save the path in the Docker Desktop configuration."
     fi
-    printf '%s\n' "  Ruta añadida: $path"
+    printf '%s\n' "  Path added: $path"
   done < "$missing"
   rm -f "$missing"
-  printf '%s\n' "  Reinicia Docker Desktop a mano: ciérralo y ábrelo otra vez."
-  printf '%s\n' "  Cuando esté en marcha, ejecuta otra vez ./lar.sh install."
+  printf '%s\n' "  Restart Docker Desktop by hand: quit it and open it again."
+  printf '%s\n' "  When it is running, run ./lar.sh install again."
   exit 0
 }
 
@@ -303,17 +303,17 @@ lar_ask_replace_files() {
     return 1
   fi
   if [ ! -r /dev/tty ]; then
-    printf '%s\n' "  Sin terminal interactiva no se sustituyen settings.yaml, sites.yaml ni data/.env."
+    printf '%s\n' "  Without an interactive terminal, settings.yaml, sites.yaml, and data/.env are not replaced."
     return 1
   fi
-  printf '%s\n' "PELIGRO: responder que sí sustituye estos archivos por las plantillas:"
+  printf '%s\n' "DANGER: answering yes replaces these files with the templates:"
   for file in data/config/settings.yaml data/config/sites.yaml data/.env; do
     if [ -s "$root/$file" ]; then
       printf '%s\n' "  $file"
     fi
   done
-  printf '%s\n' "data/.env, si se sustituye, vuelve a dejar el usuario root con contraseña toor."
-  lar_ask_yes "¿Sustituir esos archivos?"
+  printf '%s\n' "If data/.env is replaced, the root user password goes back to toor."
+  lar_ask_yes "Replace those files?"
 }
 
 lar_require_vmnetd() {
@@ -328,26 +328,26 @@ lar_require_vmnetd() {
   helper=/Library/PrivilegedHelperTools/com.docker.vmnetd
   socket=/var/run/com.docker.vmnetd.sock
   if [ -f "$helper" ] || [ -S "$socket" ]; then
-    printf '%s\n' "  vmnetd: instalado"
+    printf '%s\n' "  vmnetd: installed"
     return 0
   fi
 
-  printf '%s\n' "En macOS, Docker necesita vmnetd para abrir el puerto 80." >&2
-  printf '%s\n' "Ese ayudante no está instalado." >&2
-  printf '%s\n' "Cierra Docker Desktop desde el icono de la ballena y ejecuta:" >&2
+  printf '%s\n' "On macOS, Docker needs vmnetd to open port 80." >&2
+  printf '%s\n' "That helper is not installed." >&2
+  printf '%s\n' "Quit Docker Desktop from the whale icon and run:" >&2
   printf '%s\n' "  sudo /Applications/Docker.app/Contents/MacOS/install vmnetd" >&2
-  printf '%s\n' "Después ábrelo y vuelve a ejecutar ./lar.sh install." >&2
+  printf '%s\n' "Then open it and run ./lar.sh install again." >&2
   exit 1
 }
 
 lar_install() {
-  printf '%s\n' "Instalando LAR"
+  printf '%s\n' "Installing LAR"
   overwrite=0
   if ! command -v docker >/dev/null 2>&1; then
-    lar_fail "No se encuentra docker. Instala Docker Engine o Docker Desktop."
+    lar_fail "docker was not found. Install Docker Engine or Docker Desktop."
   fi
   if ! docker compose version >/dev/null 2>&1; then
-    lar_fail "No se encuentra Docker Compose v2. Hace falta el comando: docker compose"
+    lar_fail "Docker Compose v2 was not found. The command is required: docker compose"
   fi
   lar_require_vmnetd
   lar_share_data

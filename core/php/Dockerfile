@@ -55,7 +55,7 @@ COPY node-versions /tmp/lar-node
 RUN su - web -c 'curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash' \
     && su - web -c 'set -e; . "$HOME/.nvm/nvm.sh"; default=; while read -r version flag; do case "$version" in ""|\#*) continue ;; esac; nvm install "$version"; if [ "$flag" = "default" ]; then default=$version; fi; done < /tmp/lar-node; if [ -n "$default" ]; then nvm alias default "$default"; fi; nvm ls'
 
-# Herramientas de la shell. mytop no va aquí: vigila un servidor de bases de datos.
+# Shell tools. mytop is not included: it watches a database server.
 RUN set -eu \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -92,7 +92,7 @@ RUN rm -f /usr/local/bin/svgo \
     && chmod 755 /usr/local/bin/svgo \
     && svgo --version
 
-# gulp 3 va con Node 14. El CLI es global; la versión local la pone el proyecto.
+# gulp 3 runs on Node 14. The CLI is global; the project sets the local version.
 RUN su - web -c '. "$HOME/.nvm/nvm.sh" && nvm use 14.15.0 && npm install -g gulp-cli@2.3.0' \
     && printf '%s\n' '#!/bin/sh' 'exec /home/web/.nvm/versions/node/v14.15.0/bin/node /home/web/.nvm/versions/node/v14.15.0/lib/node_modules/gulp-cli/bin/gulp.js "$@"' > /usr/local/bin/gulp \
     && chmod 755 /usr/local/bin/gulp
@@ -123,14 +123,14 @@ COPY reload.sh /usr/local/bin/lar-php-reload
 RUN chown web:web /home/web/.zshrc /home/web/.oh-my-zsh/custom/themes/lar.zsh-theme /home/web/.oh-my-zsh/custom/plugins/artisan/artisan.plugin.zsh \
     && chmod 755 /usr/local/bin/lar-php /usr/local/bin/lar-php-reload
 
-# Composer queda en la imagen. El phar llama a "php" del PATH, el de esta terminal.
+# Composer stays in the image. The phar calls "php" from PATH, the one in this terminal.
 RUN set -eu \
     && curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php \
     && php8.4 /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && rm -f /tmp/composer-setup.php \
     && php8.4 /usr/local/bin/composer --version
 
-# upgrade.stamp cambia cuando lar update acepta parches. Esta capa se repite y el resto queda en caché.
+# upgrade.stamp changes when lar update accepts patches. This layer is rebuilt and the rest stays cached.
 COPY upgrade.list /tmp/lar-upgrade.list
 COPY upgrade.stamp /tmp/lar-upgrade.stamp
 RUN set -eu \

@@ -1,39 +1,39 @@
 # LAR
 
-Entorno local en Docker para sitios PHP. Cada sitio elige Apache o nginx y una versión de PHP. Los datos y la config viven en `data/` y se conservan al parar o actualizar.
+Local Docker environment for PHP sites. Each site chooses Apache or nginx and a PHP version. Data and config live in `data/` and stay when you stop or update.
 
-## Petición
+## Request
 
 ```mermaid
 flowchart LR
-  navegador --> proxy["proxy · nginx :80"]
+  browser --> proxy["proxy · nginx :80"]
   proxy --> apache
   proxy --> nginx
-  apache --> php["PHP-FPM de esa versión"]
+  apache --> php["PHP-FPM for that version"]
   nginx --> php
-  php --> servicios["MySQL · MariaDB · Redis · Elasticsearch · MinIO · Mailpit"]
+  php --> services["MySQL · MariaDB · Redis · Elasticsearch · MinIO · Mailpit"]
 ```
 
-El proxy mira el dominio y pasa la petición a Apache o al nginx de ese sitio. Si el sitio tiene PHP, ese servidor llama al FPM de su versión. Si no, sirve HTML.
+The proxy looks at the domain and forwards the request to Apache or to that site's nginx. If the site has PHP, that server calls the FPM for its version. Otherwise it serves HTML.
 
-## Instalación
+## Installation
 
 [INSTALL.md](INSTALL.md)
 
-## Comandos
+## Commands
 
-- `lar install` — prepara Docker y la config
-- `lar init` — crea la config si falta
-- `lar up` — arranca el entorno
-- `lar down` — lo para, sin borrar datos
-- `lar restart` — reinicia
-- `lar status` — contenedores
-- `lar logs` — últimas líneas de log
-- `lar list` — sitios; flechas y enter abren uno
-- `lar shell sitio` — shell de ese sitio (`lar -s sitio`)
-- `lar update` — parches de la imagen PHP
+- `lar install` — prepares Docker and the config
+- `lar init` — creates the config when it is missing
+- `lar up` — starts the environment
+- `lar down` — stops it, without deleting data
+- `lar restart` — restarts
+- `lar status` — containers
+- `lar logs` — latest log lines
+- `lar list` — sites; arrows and enter open one
+- `lar shell site` — shell for that site (`lar -s site`)
+- `lar update` — patches for the PHP image
 
-`up`, `down`, `restart` y `logs` aceptan un servicio: proxy, apache, nginx, php, mysql57, mysql8, mariadb1011, mariadb101, elasticsearch, minio, redis, mailpit.
+`up`, `down`, `restart`, and `logs` accept one service: proxy, apache, nginx, php, mysql57, mysql8, mariadb1011, mariadb101, elasticsearch, minio, redis, mailpit.
 
 ## Roadmap
 

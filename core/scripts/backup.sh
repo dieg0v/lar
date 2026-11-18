@@ -1,3 +1,3 @@
 #!/bin/sh
-printf '%s\n' "Las copias de seguridad todavía no están implementadas." >&2
+printf '%s\n' "Backups are not implemented yet." >&2
 exit 1

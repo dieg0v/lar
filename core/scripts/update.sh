@@ -1,8 +1,8 @@
 #!/bin/sh
-# Parches de la imagen PHP. Se incluye desde lar.sh.
+# Patches for the PHP image. Included from lar.sh.
 
 if [ "${0##*/}" = "update.sh" ]; then
-  printf '%s\n' "Este archivo se carga desde ./lar.sh" >&2
+  printf '%s\n' "This file is loaded from ./lar.sh" >&2
   exit 1
 fi
 
@@ -76,12 +76,12 @@ lar_update_apply() {
   invalid=$(cat "$accepted" | awk 'NF && $1 !~ /^[a-z0-9][a-z0-9.+-]*$/ { print $1 }')
   if [ -n "$invalid" ]; then
     lar_update_cleanup
-    lar_fail "Paquete no válido: $invalid"
+    lar_fail "Invalid package: $invalid"
   fi
   tmp=$(mktemp)
   {
-    printf '%s\n' "# Paquetes que lar update sube en la imagen. Una línea, un paquete."
-    printf '%s\n' "# LibreOffice, Node y gulp no entran aquí."
+    printf '%s\n' "# Packages lar update upgrades in the image. One package per line."
+    printf '%s\n' "# LibreOffice, Node, and gulp are not included here."
     {
       lar_update_saved_names
       cat "$accepted"
@@ -89,30 +89,30 @@ lar_update_apply() {
   } > "$tmp"
   mv "$tmp" "$list"
   date +%s > "$stamp"
-  printf '%s\n' "Actualizando la imagen de PHP. Las shells de ese contenedor se cierran."
+  printf '%s\n' "Updating the PHP image. Shells in that container will close."
   lar_prepare_runtime
   lar_require_shared
   lar_compose up -d --build --force-recreate --no-deps php
   lar_reload_front
-  printf '%s\n' "Imagen PHP actualizada."
+  printf '%s\n' "PHP image updated."
 }
 
 lar_update() {
   if [ "$#" -ne 0 ]; then
-    printf '%s\n' "update no admite argumentos." >&2
+    printf '%s\n' "update does not accept arguments." >&2
     exit 2
   fi
   lar_prepare_runtime
   running=$(lar_compose ps --status running -q php 2>/dev/null || true)
   if [ -z "$running" ]; then
-    lar_fail "El contenedor lar-php no está en marcha. Ejecuta lar up."
+    lar_fail "The lar-php container is not running. Run lar up."
   fi
   LAR_UPDATE_DIR=$(mktemp -d)
   : > "$LAR_UPDATE_DIR/php"
   : > "$LAR_UPDATE_DIR/chrome"
   : > "$LAR_UPDATE_DIR/tools"
   : > "$LAR_UPDATE_DIR/accepted"
-  printf '%s\n' "Buscando actualizaciones en la máquina PHP"
+  printf '%s\n' "Looking for updates in the PHP machine"
   if ! lar_compose exec -T -u root php sh -s > "$LAR_UPDATE_DIR/raw" <<'EOF'
 set -eu
 export LC_ALL=C
@@ -139,7 +139,7 @@ printf "PIN\tgulp\t%s\n" "$gver"
 EOF
   then
     lar_update_cleanup
-    lar_fail "No se han podido buscar actualizaciones."
+    lar_fail "Could not look for updates."
   fi
   pin_lo=''
   pin_gulp=''
@@ -165,19 +165,19 @@ EOF
     printf '%s\n' "PHP"
     lar_update_print_php "$LAR_UPDATE_DIR/php"
   else
-    printf '%s\n' "PHP al día"
+    printf '%s\n' "PHP is up to date"
   fi
   if [ -s "$LAR_UPDATE_DIR/chrome" ]; then
     printf '%s\n' "Chrome"
     lar_update_print_rows "$LAR_UPDATE_DIR/chrome"
   else
-    printf '%s\n' "Chrome al día"
+    printf '%s\n' "Chrome is up to date"
   fi
   if [ -s "$LAR_UPDATE_DIR/tools" ]; then
-    printf '%s\n' "Herramientas"
+    printf '%s\n' "Tools"
     lar_update_print_rows "$LAR_UPDATE_DIR/tools"
   else
-    printf '%s\n' "Herramientas al día"
+    printf '%s\n' "Tools are up to date"
   fi
   nodes=$(awk 'NF && $1 !~ /^#/ { printf "%s%s", sep, $1; sep = ", " }' "$LAR_ROOT/core/php/node-versions")
   if [ -z "$pin_lo" ]; then
@@ -186,29 +186,29 @@ EOF
   if [ -z "$pin_gulp" ]; then
     pin_gulp='2.3.0'
   fi
-  printf '%s\n' "Fijados"
+  printf '%s\n' "Pinned"
   printf '  %s\n' "$pin_lo"
   printf '  Node %s\n' "$nodes"
   printf '  gulp-cli %s\n' "$pin_gulp"
   if [ ! -s "$LAR_UPDATE_DIR/php" ] && [ ! -s "$LAR_UPDATE_DIR/chrome" ] && [ ! -s "$LAR_UPDATE_DIR/tools" ]; then
-    printf '%s\n' "No hay actualizaciones."
+    printf '%s\n' "There are no updates."
     lar_update_cleanup
     return 0
   fi
   if [ -n "$(lar_update_saved_names)" ]; then
-    printf '%s\n' "Si aceptas un grupo, se reconstruye la última capa. Lo que ya estaba aceptado también sube."
+    printf '%s\n' "If you accept a group, the last layer is rebuilt. What was already accepted is upgraded too."
   fi
-  if [ -s "$LAR_UPDATE_DIR/php" ] && lar_ask_yes "¿Actualizar PHP?"; then
+  if [ -s "$LAR_UPDATE_DIR/php" ] && lar_ask_yes "Update PHP?"; then
     cut -f 1 "$LAR_UPDATE_DIR/php" >> "$LAR_UPDATE_DIR/accepted"
   fi
-  if [ -s "$LAR_UPDATE_DIR/chrome" ] && lar_ask_yes "¿Actualizar Chrome?"; then
+  if [ -s "$LAR_UPDATE_DIR/chrome" ] && lar_ask_yes "Update Chrome?"; then
     cut -f 1 "$LAR_UPDATE_DIR/chrome" >> "$LAR_UPDATE_DIR/accepted"
   fi
-  if [ -s "$LAR_UPDATE_DIR/tools" ] && lar_ask_yes "¿Actualizar las herramientas?"; then
+  if [ -s "$LAR_UPDATE_DIR/tools" ] && lar_ask_yes "Update the tools?"; then
     cut -f 1 "$LAR_UPDATE_DIR/tools" >> "$LAR_UPDATE_DIR/accepted"
   fi
   if [ ! -s "$LAR_UPDATE_DIR/accepted" ]; then
-    printf '%s\n' "No se cambia nada."
+    printf '%s\n' "Nothing is changed."
     lar_update_cleanup
     return 0
   fi

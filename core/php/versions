@@ -1,5 +1,5 @@
-# version  puerto del pool www
-# Los pools de un sitio con directivas propias usan 9101 en adelante.
+# version  www pool port
+# Pools for a site with its own directives start at 9101.
 5.6 9056
 7.0 9070
 7.1 9071

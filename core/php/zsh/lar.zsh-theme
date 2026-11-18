@@ -1,6 +1,6 @@
-# LAR p85 n22 /ruta : rama*
-# Fondos: LAR morado, PHP cian, Node verde.
-# Ruta en verde. Rama en morado, con * si hay cambios.
+# LAR p85 n22 /path : branch*
+# Backgrounds: LAR magenta, PHP cyan, Node green.
+# Path in green. Branch in magenta, with * when there are changes.
 
 lar_git() {
   command git -c safe.directory='*' "$@"
