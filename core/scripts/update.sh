@@ -21,7 +21,7 @@ lar_update_group() {
     google-chrome-stable)
       printf '%s\n' chrome
       ;;
-    ca-certificates|curl|git|unzip|sudo|zsh|tzdata|systemd-standalone-tmpfiles|rclone|rsync|htop|zip|pdftk-java|mysql-client|tar|wget|imagemagick|ffmpeg|tree|python3|golang-go|jpegoptim|optipng|pngquant|gifsicle|webp|libavif-bin|tmux|nano|vim)
+    ca-certificates|curl|git|unzip|sudo|zsh|tzdata|systemd-standalone-tmpfiles|rclone|rsync|htop|zip|pdftk-java|mysql-client|tar|wget|imagemagick|ffmpeg|tree|python3|golang-go|jpegoptim|optipng|pngquant|gifsicle|webp|libavif-bin|tmux|nano|vim|qrencode|iputils-ping)
       printf '%s\n' tools
       ;;
     *)

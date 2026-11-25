@@ -93,7 +93,7 @@ RUN rm -f /usr/local/bin/svgo \
     && svgo --version
 
 # gulp 3 runs on Node 14. The CLI is global; the project sets the local version.
-RUN su - web -c '. "$HOME/.nvm/nvm.sh" && nvm use 14.15.0 && npm install -g gulp-cli@2.3.0' \
+RUN su - web -c '. "$HOME/.nvm/nvm.sh" && nvm use 14.15.0 && npm install -g gulp-cli@2.3.0 --unsafe-perm --no-progress --cache /tmp/npm-cache' \
     && printf '%s\n' '#!/bin/sh' 'exec /home/web/.nvm/versions/node/v14.15.0/bin/node /home/web/.nvm/versions/node/v14.15.0/lib/node_modules/gulp-cli/bin/gulp.js "$@"' > /usr/local/bin/gulp \
     && chmod 755 /usr/local/bin/gulp
 
@@ -129,6 +129,15 @@ RUN set -eu \
     && php8.4 /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && rm -f /tmp/composer-setup.php \
     && php8.4 /usr/local/bin/composer --version
+
+# qrencode and ping stay in the image. qrencode is /usr/bin/qrencode, version 4.1.1 or newer.
+RUN set -eu \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends qrencode iputils-ping \
+    && rm -rf /var/lib/apt/lists/* \
+    && test "$(command -v qrencode)" = /usr/bin/qrencode \
+    && test "$(command -v ping)" = /usr/bin/ping \
+    && qrencode --version 2>&1 | awk 'BEGIN { ok = 0 } /version/ { n = split($3, v, "."); major = v[1] + 0; minor = v[2] + 0; patch = v[3] + 0; if (major > 4 || (major == 4 && (minor > 1 || (minor == 1 && patch >= 1)))) ok = 1 } END { exit ok ? 0 : 1 }'
 
 # upgrade.stamp changes when lar update accepts patches. This layer is rebuilt and the rest stays cached.
 COPY upgrade.list /tmp/lar-upgrade.list
