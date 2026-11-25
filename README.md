@@ -1,8 +1,10 @@
-![LAR](identity/lar_logo_name_black.png)
+<img src="identity/lar_logo_name_black.png" alt="LAR" width="50%">
+
+<br><br>
 
 # LAR
 
-**Lar** is Galician for home. It sits next to `home` and `localhost`: the machine where the projects run, old ones and new ones.
+**Lar** is Galician for home. It sits next to `home` and `localhost`: the machine where the projects run.
 
 This is a Docker Compose stack of several containers, one local environment for all of them, old projects and new ones. It is meant for working with PHP, Node, and MySQL, among other things. I keep code from about twenty years of work, and I got tired of a different setup for each project. So this one is opinionated: the packages, the versions, and the way a site is laid out are the ones I want. The decisions are mine. The typing was done with AI.
 
