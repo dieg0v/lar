@@ -1,6 +1,8 @@
 <img src="identity/lar_logo_name_black.png" alt="LAR" width="50%">
 
-<br><br>
+<br>
+
+---
 
 # LAR
 
@@ -94,7 +96,7 @@ New commands to add:
 
 ---
 
-<br><br><br>
+<br><br>
 
 <p align="center">
   <img src="identity/lar_logo_white.png" alt="LAR" width="96">
