@@ -8,7 +8,7 @@ This is a Docker Compose stack of several containers, one local environment for 
 
 It runs on a Mac. I have not tried it anywhere else. It might work on another machine with a few small changes to the install and the config.
 
-[Install](INSTALL.md)
+[How to install](INSTALL.md)
 
 ## What it does
 
@@ -35,9 +35,9 @@ The PHP machine also has a few extra binaries I usually use. The set is opiniona
 | `lar install` | Checks Docker, the port 80 helper, and the shared folders. Asks before it replaces your files |
 | `lar init` | Creates `data/` and the config, only where something is missing |
 | `lar up` | Starts the stack. On a Mac it writes the site domains into `/etc/hosts` |
-| `lar up [service]` | Starts only that service. It does not change `/etc/hosts`. If a domain is missing, it prints the line to add |
+| `lar up [service]` | For example `lar up php`. Starts only that service. It does not change `/etc/hosts`. If a domain is missing, it prints the line to add |
 | `lar down` | Stops everything and removes the hosts block. Your data stays |
-| `lar down [service]` | Stops only that service. It does not change `/etc/hosts` |
+| `lar down [service]` | For example `lar down php`. Stops only that service. It does not change `/etc/hosts` |
 | `lar restart` | Restarts the stack, or one service |
 | `lar status` | Shows the containers |
 | `lar logs` | Last log lines, or `lar logs php` for one service |

@@ -1,4 +1,4 @@
-# INSTALL
+# How to install
 
 1. Install Docker Desktop and open it.
 2. Quit it from the whale icon → Quit. In the terminal:
