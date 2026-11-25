@@ -59,9 +59,9 @@ Commands:
 
 Services: proxy, apache, nginx, php, mysql57, mysql8, mariadb1011, mariadb101, elasticsearch, minio, redis, mailpit
 
-./lar.sh up starts the nginx on port 80, Apache, nginx, the PHP machine, MySQL 5.7, MySQL 8, MariaDB 10.11, MariaDB 10.1, Elasticsearch, MinIO, Redis, and Mailpit.
+./lar.sh up starts the nginx on port 80, Apache, nginx, the PHP machine, MySQL 5.7, MySQL 8, MariaDB 10.11, MariaDB 11.8, Elasticsearch, MinIO, Redis, and Mailpit. The MariaDB 11.8 service is still named mariadb101.
 ./lar.sh shell site1 opens zsh at site1's path. lar -s site1 is the same. lar list picks the site with the arrows and enter. If the site has php, that version is set. If it has node, it runs nvm use. With no name it opens web's home. sudo su switches to root.
-On the Mac, up writes the domains into /etc/hosts and down removes that block. If it changes, macOS asks for the password.
+On the Mac, up with no service writes the domains into /etc/hosts and down with no service removes that block. up or down with one service does not change /etc/hosts. If a domain is missing, up with one service prints the line to add. If the hosts file changes, macOS asks for the password.
 init does not replace settings.yaml, sites.yaml, or data/.env when they already have content.
 install asks before replacing them. If you answer no, it keeps them.
 On macOS, install checks vmnetd. Without that helper, port 80 cannot be opened.
