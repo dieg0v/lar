@@ -86,12 +86,12 @@ services:
       - lar
 
   mariadb101:
-    image: mariadb:10.1.48
+    image: mariadb:11.8.6
     platform: linux/amd64
     container_name: lar-mariadb101
     environment:
       TZ: ${LAR_TIMEZONE}
-      MYSQL_ROOT_PASSWORD: ${MARIADB101_ROOT_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB101_ROOT_PASSWORD}
     ports:
       - "${LAR_BIND_MARIADB101_IP}:${LAR_PORT_MARIADB101}:3306"
     volumes:
